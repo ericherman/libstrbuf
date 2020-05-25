@@ -24,8 +24,11 @@ TEST_BUILD_OBJS=strbuf.o echeck.o oom-injecting-malloc.o
 
 TEST_DEBUG_OBJS=strbuf-debug.o echeck-debug.o oom-injecting-malloc-debug.o
 
-TEST_INCS=-I./src -I./tests -I./submodules/libecheck/src \
-		-I./submodules/libecheck/src -I./submodules/libecheck/util
+TEST_INCS=-I./src \
+	-I./tests \
+	-I./submodules/libecheck/src \
+	-I./submodules/context-alloc/src \
+	-I./submodules/context-alloc/util
 
 TEST_BUILD_CFLAGS=$(CFLAGS) $(BUILD_CFLAGS) $(TEST_INCS) $(TEST_BUILD_OBJS)
 TEST_DEBUG_CFLAGS=$(CFLAGS) $(DEBUG_CFLAGS) $(TEST_INCS) $(TEST_DEBUG_OBJS)

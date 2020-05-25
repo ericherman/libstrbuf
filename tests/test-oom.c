@@ -2,9 +2,9 @@
 /* test-oom.c: tests out of memeory */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include "../src/strbuf.h"
-#include "../submodules/libecheck/src/echeck.h"
-#include "../submodules/context-alloc/util/oom-injecting-malloc.h"
+#include <strbuf.h>
+#include <echeck.h>
+#include <oom-injecting-malloc.h>
 
 #include <assert.h>
 #include <string.h>

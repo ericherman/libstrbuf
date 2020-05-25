@@ -2,8 +2,8 @@
 /* test-append.c */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include "../src/strbuf.h"
-#include "../submodules/libecheck/src/echeck.h"
+#include <strbuf.h>
+#include <echeck.h>
 
 #include <assert.h>
 #include <string.h>
