@@ -24,6 +24,8 @@ test-trim
 test-trim-debug
 test-oom
 test-oom-debug
+test-avail
+test-avail-debug
 
 ###################
 # backup files

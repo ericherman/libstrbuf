@@ -3,6 +3,8 @@ default: check
 SHELL=/bin/bash
 BROWSER=firefox
 
+#DEBUG_RUN=valgrind -q
+
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 
@@ -86,7 +88,7 @@ check-append: test-append
 	./$<
 
 check-append-debug: test-append-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # append_f
 test-append-f: tests/test-append-f.c $(TEST_BUILD_OBJS)
@@ -99,6 +101,7 @@ check-append-f: test-append-f
 	./$<
 
 check-append-f-debug: test-append-f-debug
+	$(DEBUG_RUN) ./$<
 
 # append_float
 test-append-float: tests/test-append-float.c $(TEST_BUILD_OBJS)
@@ -111,7 +114,7 @@ check-append-float: test-append-float
 	./$<
 
 check-append-float-debug: test-append-float-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # append_int
 test-append-int: tests/test-append-int.c $(TEST_BUILD_OBJS)
@@ -124,7 +127,7 @@ check-append-int: test-append-int
 	./$<
 
 check-append-int-debug: test-append-int-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # append_uint
 test-append-uint: tests/test-append-uint.c $(TEST_BUILD_OBJS)
@@ -137,7 +140,7 @@ check-append-uint: test-append-uint
 	./$<
 
 check-append-uint-debug: test-append-uint-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # prepend
 test-prepend: tests/test-prepend.c $(TEST_BUILD_OBJS)
@@ -147,10 +150,10 @@ test-prepend-debug: tests/test-prepend.c $(TEST_DEBUG_OBJS)
 	$(CC) $(TEST_DEBUG_CFLAGS) $< -o $@ $(DEBUG_LDFLAGS)
 
 check-prepend: test-prepend
-	./$<
+	$(DEBUG_RUN) ./$<
 
 check-prepend-debug: test-prepend-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # prepend_f
 test-prepend-f: tests/test-prepend-f.c $(TEST_BUILD_OBJS)
@@ -163,7 +166,7 @@ check-prepend-f: test-prepend-f
 	./$<
 
 check-prepend-f-debug: test-prepend-f-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # prepend_float
 test-prepend-float: tests/test-prepend-float.c $(TEST_BUILD_OBJS)
@@ -176,7 +179,7 @@ check-prepend-float: test-prepend-float
 	./$<
 
 check-prepend-float-debug: test-prepend-float-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # prepend_int
 test-prepend-int: tests/test-prepend-int.c $(TEST_BUILD_OBJS)
@@ -189,7 +192,7 @@ check-prepend-int: test-prepend-int
 	./$<
 
 check-prepend-int-debug: test-prepend-int-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # prepend_uint
 test-prepend-uint: tests/test-prepend-uint.c $(TEST_BUILD_OBJS)
@@ -202,7 +205,7 @@ check-prepend-uint: test-prepend-uint
 	./$<
 
 check-prepend-uint-debug: test-prepend-uint-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # new-no-grow
 test-new-no-grow: tests/test-new-no-grow.c $(TEST_BUILD_OBJS)
@@ -215,7 +218,7 @@ check-new-no-grow: test-new-no-grow
 	./$<
 
 check-new-no-grow-debug: test-new-no-grow-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 # trim
 test-trim: tests/test-trim.c $(TEST_BUILD_OBJS)
@@ -228,7 +231,7 @@ check-trim: test-trim
 	./$<
 
 check-trim-debug: test-trim-debug
-	./$<
+	$(DEBUG_RUN) ./$<
 
 
 # oom
@@ -242,7 +245,22 @@ check-oom: test-oom
 	./$<
 
 check-oom-debug: test-oom-debug
+	$(DEBUG_RUN) ./$<
+
+# avail
+test-avail: tests/test-avail.c $(TEST_BUILD_OBJS)
+	$(CC) $(TEST_BUILD_CFLAGS) $< -o $@
+
+test-avail-debug: tests/test-avail.c $(TEST_DEBUG_OBJS)
+	$(CC) $(TEST_DEBUG_CFLAGS) $< -o $@ $(DEBUG_LDFLAGS)
+
+check-avail: test-avail
 	./$<
+
+check-avail-debug: test-avail-debug
+	$(DEBUG_RUN) ./$<
+
+
 
 
 check-build: \
@@ -258,6 +276,7 @@ check-build: \
 	check-prepend-uint \
 	check-new-no-grow \
 	check-trim \
+	check-avail \
 	check-oom
 
 check-debug: \
@@ -273,6 +292,7 @@ check-debug: \
 	check-prepend-uint-debug \
 	check-new-no-grow-debug \
 	check-trim-debug \
+	check-avail-debug \
 	check-oom-debug
 
 check: check-build check-debug

@@ -213,6 +213,13 @@ size_t strbuf_len(strbuf_s *sb)
 	return sb->end - sb->start;
 }
 
+size_t strbuf_avail(strbuf_s *sb)
+{
+	size_t usable_len = sb->buf_len ? (sb->buf_len - 1) : 0;
+	size_t slen = strbuf_len(sb);
+	return usable_len > slen ? usable_len - slen : 0;
+}
+
 char strbuf_char(strbuf_s *sb, size_t idx)
 {
 	if (idx >= strbuf_len(sb)) {
@@ -237,7 +244,7 @@ const char *strbuf_rehome(strbuf_s *sb)
 
 const char *strbuf_grow(strbuf_s *sb, size_t new_buf_len)
 {
-	if (new_buf_len < sb->buf_len) {
+	if (new_buf_len <= sb->buf_len) {
 		return strbuf_rehome(sb);
 	}
 
@@ -354,11 +361,8 @@ const char *strbuf_append_uint(strbuf_s *sb, uint64_t u)
 const char *strbuf_prepend(strbuf_s *sb, const char *str, size_t str_len)
 {
 	size_t add_len = Sb_strnlen(str, str_len);
-	size_t old_len = sb->end - sb->start;
-	size_t unused = sb->buf_len - sb->end;
-	assert(unused);		/* trailing null */
-	--unused;
-
+	size_t old_len = strbuf_len(sb);
+	size_t unused = strbuf_avail(sb);
 	const void *p;
 	if (unused < add_len) {
 		p = strbuf_grow(sb, strbuf_len(sb) + add_len);
@@ -370,11 +374,11 @@ const char *strbuf_prepend(strbuf_s *sb, const char *str, size_t str_len)
 	assert(p);
 	sb->start = add_len;
 	sb->end = add_len + old_len;
+	size_t remaining = sb->buf_len - sb->end;
+	Sb_memset(sb->buf + sb->end, 0x00, remaining);
 	p = Sb_memmove(sb->buf, str, add_len);
 	assert(p);
 	sb->start = 0;
-	size_t remaining = sb->buf_len - sb->end;
-	Sb_memset(sb->buf + sb->end, 0x00, remaining);
 	return strbuf_str(sb);
 }
 

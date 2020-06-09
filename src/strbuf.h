@@ -33,6 +33,7 @@ const char *strbuf_str(strbuf_s *sb);
 const char *strbuf_set(strbuf_s *sb, const char *str, size_t str_len);
 
 size_t strbuf_len(strbuf_s *sb);
+size_t strbuf_avail(strbuf_s *sb);
 
 char strbuf_char(strbuf_s *sb, size_t idx);
 
