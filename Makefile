@@ -303,7 +303,9 @@ check-debug: \
 	check-avail-debug \
 	check-oom-debug
 
-check: check-build check-debug
+check-all: check-build check-debug
+
+check: check-build
 
 line-cov: check-debug
 	lcov	--checksum \
