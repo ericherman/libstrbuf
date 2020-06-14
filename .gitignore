@@ -1,31 +1,5 @@
-test-append
-test-append-debug
-test-append-f
-test-append-f-debug
-test-append-float
-test-append-float-debug
-test-append-int
-test-append-int-debug
-test-append-uint
-test-append-uint-debug
-test-prepend
-test-prepend-debug
-test-prepend-f
-test-prepend-f-debug
-test-prepend-float
-test-prepend-float-debug
-test-prepend-int
-test-prepend-int-debug
-test-prepend-uint
-test-prepend-uint-debug
-test-new-no-grow
-test-new-no-grow-debug
-test-trim
-test-trim-debug
-test-oom
-test-oom-debug
-test-avail
-test-avail-debug
+build
+debug
 
 ###################
 # backup files
