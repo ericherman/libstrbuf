@@ -2,15 +2,12 @@
 /* test-avail.c */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include <strbuf.h>
-#include <echeck.h>
+#include "strbuf.h"
+#include "echeck.h"
 
-#include <assert.h>
-#include <string.h>
-
-int test_avail(void)
+unsigned test_avail(void)
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	/* sizeof(strbuf_s) is about 64 */
 	/* we expect only about 16 bytes left to make use of a string data */
@@ -23,7 +20,7 @@ int test_avail(void)
 	failures += check_int(usable < buf_len ? 1 : 0, 1);
 
 	const char *abc_ws = "   abc   ";
-	const char *rv1 = strbuf_set(sb, abc_ws, strlen(abc_ws));
+	const char *rv1 = strbuf_set(sb, abc_ws, eembed_strlen(abc_ws));
 	check_int(rv1 == NULL ? 0 : 1, 1);
 	const char *rv2 = strbuf_trim(sb);
 	check_int(rv2 == NULL ? 0 : 1, 1);
@@ -36,23 +33,23 @@ int test_avail(void)
 	junk[0] = 'a';
 	junk[1] = 'b';
 	junk[2] = 'c';
-	memset(junk + 3, 'X', remaining);
+	eembed_memset(junk + 3, 'X', remaining);
 	junk[3 + remaining] = '\0';
 
-	const char *res = strbuf_append(sb, junk + 3, strlen(junk + 3));
+	const char *res = strbuf_append(sb, junk + 3, eembed_strlen(junk + 3));
 	failures += check_str(res, junk);
 	failures += check_str(strbuf_str(sb), junk);
 
 	const char *xyz_ws = "   xyz   ";
-	strbuf_set(sb, xyz_ws, strlen(xyz_ws));
+	strbuf_set(sb, xyz_ws, eembed_strlen(xyz_ws));
 	strbuf_trim(sb);
 	expected_remaining = usable - 3;
 	remaining = strbuf_avail(sb);
 	failures += check_int(remaining, expected_remaining);
 
-	memset(junk, 'Q', remaining);
+	eembed_memset(junk, 'Q', remaining);
 	junk[remaining] = '\0';
-	const char *res2 = strbuf_prepend(sb, junk, strlen(junk));
+	const char *res2 = strbuf_prepend(sb, junk, eembed_strlen(junk));
 	junk[remaining + 0] = 'x';
 	junk[remaining + 1] = 'y';
 	junk[remaining + 2] = 'z';
@@ -65,17 +62,4 @@ int test_avail(void)
 	return failures;
 }
 
-int main(int argc, char **argv)
-{
-	int failures = 0;
-	assert(argc);
-	assert(argv);
-
-	failures += test_avail();
-
-	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
-	}
-
-	return failures ? 1 : 0;
-}
+ECHECK_TEST_MAIN(test_avail)

@@ -2,13 +2,10 @@
 /* test-new-no-grow.c */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include <strbuf.h>
-#include <echeck.h>
+#include "strbuf.h"
+#include "echeck.h"
 
-#include <assert.h>
-#include <string.h>
-
-int test_destroy_null(void)
+unsigned test_destroy_null(void)
 {
 	strbuf_s *sb = NULL;
 	/* calling destroy on NULL should be okay */
@@ -16,20 +13,16 @@ int test_destroy_null(void)
 	return 0;
 }
 
-int test_custom_small_buffer(void)
+unsigned test_custom_small_buffer(void)
 {
-	int failures = 0;
+	unsigned failures = 0;
 
-	strbuf_malloc_func alloc_func = NULL;
-	strbuf_free_func free_func = NULL;
-	void *alloc_context = NULL;
 	size_t buf_len = 65;
 	unsigned char mem_buf[buf_len];
 	const char *str = "123456789 1234567890";
 
 	strbuf_s *sb =
-	    strbuf_new_custom(alloc_func, free_func, alloc_context, mem_buf,
-			      buf_len, str, strlen(str));
+	    strbuf_new_custom(NULL, mem_buf, buf_len, str, eembed_strlen(str));
 
 	if (!sb) {
 		return 1;
@@ -38,7 +31,7 @@ int test_custom_small_buffer(void)
 	failures += check_str(strbuf_str(sb), str);
 
 	str = "123456789 123456789 123456789 123456789 1234567890";
-	const char *s = strbuf_set(sb, str, strlen(str));
+	const char *s = strbuf_set(sb, str, eembed_strlen(str));
 
 	failures += check_str(s, str);
 
@@ -47,9 +40,9 @@ int test_custom_small_buffer(void)
 	return failures;
 }
 
-int test_no_grow(void)
+unsigned test_no_grow(void)
 {
-	int failures = 0;
+	unsigned failures = 0;
 
 	size_t buf_len = 255;
 	unsigned char buf[buf_len];
@@ -61,9 +54,18 @@ int test_no_grow(void)
 	size_t adds = 0;
 	size_t ooms = 0;
 	for (size_t i = 0; i < (2 * buf_len); ++i) {
-		size_t max = 1;
-		char c = (i < 10) ? 'x' : ' ';
-		const void *p = strbuf_prepend_f(sb, max, "%c", c);
+		char c = (i < 10) ? ('a' + i) : ' ';
+		size_t buf_len = i + 1;
+		char buf[buf_len];
+		eembed_memset(buf, c, i);
+		buf[buf_len - 1] = '\0';
+
+		const void *p;
+		if (i % 2) {
+			p = strbuf_prepend(sb, buf, buf_len);
+		} else {
+			p = strbuf_prepend_f(sb, buf_len, "%s", buf);
+		}
 		if (!p) {
 			++ooms;
 		} else {
@@ -78,20 +80,29 @@ int test_no_grow(void)
 	const void *p = strbuf_prepend_f(sb, 3, "%s", "foo");
 	failures += check_int(p ? 1 : 0, 1);
 
-	char *bigbuf = calloc(1, 1000);
-	assert(bigbuf);
-	memset(bigbuf, 'x', 999);
+	char *bigbuf = eembed_calloc(1, 1000);
+	eembed_assert(bigbuf);
+	eembed_memset(bigbuf, 'x', 999);
 	p = strbuf_set(sb, bigbuf, 1000);
 	failures += check_int(p ? 1 : 0, 0);
-	free(bigbuf);
+	eembed_free(bigbuf);
 
 	strbuf_set(sb, "", 0);
 	adds = 0;
 	ooms = 0;
 	for (size_t i = 0; i < (2 * buf_len); ++i) {
-		size_t max = 1;
-		char c = (i < 10) ? 'x' : ' ';
-		const void *p = strbuf_append_f(sb, max, "%c", c);
+		char c = (i < 10) ? ('a' + i) : ' ';
+		size_t buf_len = i + 1;
+		char buf[buf_len];
+		eembed_memset(buf, c, i);
+		buf[buf_len - 1] = '\0';
+
+		const void *p;
+		if (i % 2) {
+			p = strbuf_append(sb, buf, buf_len);
+		} else {
+			p = strbuf_append_f(sb, buf_len, "%s", buf);
+		}
 		if (!p) {
 			++ooms;
 		} else {
@@ -105,9 +116,12 @@ int test_no_grow(void)
 	adds = 0;
 	ooms = 0;
 	for (size_t i = 0; i < (2 * buf_len); ++i) {
-		size_t max = i;
-		char c = (i < 10) ? 'x' : ' ';
-		const void *p = strbuf_prepend_f(sb, max, "%c", c);
+		const char *str = (i < 10) ? "x" : " ";
+		if (i % 2) {
+			p = strbuf_prepend(sb, str, 1);
+		} else {
+			p = strbuf_prepend_f(sb, 1, "%s", str);
+		}
 		if (!p) {
 			++ooms;
 		} else {
@@ -122,19 +136,16 @@ int test_no_grow(void)
 	return failures;
 }
 
-int main(int argc, char **argv)
+/* TODO: split into 3 tests? */
+unsigned test_new_no_grow(void)
 {
-	int failures = 0;
-	assert(argc);
-	assert(argv);
+	unsigned failures = 0;
 
 	failures += test_destroy_null();
 	failures += test_custom_small_buffer();
 	failures += test_no_grow();
 
-	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
-	}
-
-	return failures ? 1 : 0;
+	return failures;
 }
+
+ECHECK_TEST_MAIN(test_new_no_grow)

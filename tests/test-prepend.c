@@ -8,13 +8,14 @@
 #include <assert.h>
 #include <string.h>
 
-int test_prepend(const char *prepend, const char *in, const char *expected)
+unsigned test_prepend_inner(const char *prepend, const char *in,
+			    const char *expected)
 {
+	unsigned failures = 0;
+
 	size_t in_len = in ? strlen(in) : 0;
 
 	strbuf_s *sb = strbuf_new(in, in_len);
-
-	int failures = 0;
 
 	failures += check_size_t(strbuf_len(sb), in_len);
 
@@ -31,20 +32,16 @@ int test_prepend(const char *prepend, const char *in, const char *expected)
 	return failures;
 }
 
-int main(int argc, char **argv)
+unsigned test_prepend(void)
 {
-	int failures = 0;
-	assert(argc);
-	assert(argv);
+	unsigned failures = 0;
 
-	failures += test_prepend("foo", "foo", "foofoo");
-	failures += test_prepend("bar", NULL, "bar");
-	failures += test_prepend("", "baz", "baz");
-	failures += test_prepend(NULL, "wiz", "wiz");
+	failures += test_prepend_inner("foo", "foo", "foofoo");
+	failures += test_prepend_inner("bar", NULL, "bar");
+	failures += test_prepend_inner("", "baz", "baz");
+	failures += test_prepend_inner(NULL, "wiz", "wiz");
 
-	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
-	}
-
-	return failures ? 1 : 0;
+	return failures;
 }
+
+ECHECK_TEST_MAIN(test_prepend)

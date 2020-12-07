@@ -2,6 +2,7 @@ default: check
 
 SHELL=/bin/bash
 BROWSER=firefox
+DEBUG_RUN=valgrind -q
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
@@ -20,14 +21,12 @@ DEBUG_CFLAGS += -DDEBUG -O0 \
 
 DEBUG_LDFLAGS=-lgcov
 
-TEST_BUILD_OBJS=build/strbuf.o build/echeck.o build/oom-injecting-malloc.o
-TEST_DEBUG_OBJS=debug/strbuf.o debug/echeck.o debug/oom-injecting-malloc.o
+TEST_BUILD_OBJS=build/strbuf.o build/echeck.o build/eembed.o
+TEST_DEBUG_OBJS=debug/strbuf.o debug/echeck.o debug/eembed.o
 
 TEST_INCS=-I./src \
 	-I./tests \
-	-I./submodules/libecheck/src \
-	-I./submodules/context-alloc/src \
-	-I./submodules/context-alloc/util
+	-I./submodules/libecheck/src
 
 TEST_BUILD_CFLAGS=$(CFLAGS) $(BUILD_CFLAGS) $(TEST_INCS) $(TEST_BUILD_OBJS)
 TEST_DEBUG_CFLAGS=$(CFLAGS) $(DEBUG_CFLAGS) $(TEST_INCS) $(TEST_DEBUG_OBJS)
@@ -37,52 +36,41 @@ TEST_DEBUG_CFLAGS=$(CFLAGS) $(DEBUG_CFLAGS) $(TEST_INCS) $(TEST_DEBUG_OBJS)
 # $^ : all of the prerequisite files
 # $* : wildcard matched part
 
-build:
-	mkdir -pv build
+build/strbuf.o: src/strbuf.c src/strbuf.h
+	$(CC) -c $(CFLAGS) $(BUILD_CFLAGS) \
+		-I./submodules/libecheck/src \
+		-I./src \
+		$< -o $@
 
-debug:
-	mkdir -pv debug
-
-
-build/strbuf.o: src/strbuf.c src/strbuf.h build
-	$(CC) -c $(CFLAGS) $(BUILD_CFLAGS) -I./src $< -o $@
-
-debug/strbuf.o: src/strbuf.c src/strbuf.h debug
-	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) -I./src $< -o $@
+debug/strbuf.o: src/strbuf.c src/strbuf.h
+	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) \
+		-I./submodules/libecheck/src \
+		-I./src \
+		$< -o $@
 
 
 build/echeck.o: submodules/libecheck/src/echeck.c \
-		submodules/libecheck/src/echeck.h \
-		build
+		submodules/libecheck/src/echeck.h
 	$(CC) -c  $(CFLAGS) $(BUILD_CFLAGS) \
 		-I./submodules/libecheck/src \
 		$< -o $@
 
 debug/echeck.o: submodules/libecheck/src/echeck.c \
-		submodules/libecheck/src/echeck.h \
-		debug
+		submodules/libecheck/src/echeck.h
 	$(CC) -c  $(CFLAGS) $(DEBUG_CFLAGS) \
 		-I./submodules/libecheck/src \
 		$< -o $@
 
-build/oom-injecting-malloc.o: \
-		submodules/context-alloc/util/oom-injecting-malloc.c \
-		submodules/context-alloc/util/oom-injecting-malloc.h \
-		submodules/context-alloc/src/context-alloc.h \
-		build
+build/eembed.o: submodules/libecheck/src/eembed.c \
+		submodules/libecheck/src/eembed.h
 	$(CC) -c $(CFLAGS) $(BUILD_CFLAGS) \
-		-I./submodules/context-alloc/src \
-		-I./submodules/context-alloc/util \
+		-I./submodules/libecheck/src \
 		$< -o $@
 
-debug/oom-injecting-malloc.o: \
-		submodules/context-alloc/util/oom-injecting-malloc.c \
-		submodules/context-alloc/util/oom-injecting-malloc.h \
-		submodules/context-alloc/src/context-alloc.h \
-		debug
+debug/eembed.o: submodules/libecheck/src/eembed.c \
+		submodules/libecheck/src/eembed.h
 	$(CC) -c $(CFLAGS) $(DEBUG_CFLAGS) \
-		-I./submodules/context-alloc/src \
-		-I./submodules/context-alloc/util \
+		-I./submodules/libecheck/src \
 		$< -o $@
 
 # append
@@ -322,7 +310,7 @@ coverage: html-report
 	$(BROWSER) ./coverage_html/src/strbuf.c.gcov.html
 
 # .gitignore-based clean rules:
-clean-git-ignore:
+clean-git-ignore-root:
 	rm -rvf `cat .gitignore | sed -e 's/#.*//'`
 
 clean-git-ignore-src:
@@ -331,7 +319,15 @@ clean-git-ignore-src:
 clean-git-ignore-tests:
 	pushd tests && rm -rvf `cat ../.gitignore | sed -e 's/#.*//'` && popd
 
-clean: clean-git-ignore \
+clean-git-ignore-build:
+	pushd build && rm -rvf `cat ../.gitignore | sed -e 's/#.*//'` && popd
+
+clean-git-ignore-debug:
+	pushd debug && rm -rvf `cat ../.gitignore | sed -e 's/#.*//'` && popd
+
+clean: clean-git-ignore-root \
+	clean-git-ignore-build \
+	clean-git-ignore-debug \
 	clean-git-ignore-src \
 	clean-git-ignore-tests
 

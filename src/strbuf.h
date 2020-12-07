@@ -12,12 +12,9 @@
 struct strbuf;
 typedef struct strbuf strbuf_s;
 
-typedef void *(*strbuf_malloc_func)(void *context, size_t size);
-typedef void (*strbuf_free_func)(void *context, void *ptr);
+struct eembed_allocator;	/* eembed.h */
 
-strbuf_s *strbuf_new_custom(strbuf_malloc_func alloc_func,
-			    strbuf_free_func free_func,
-			    void *alloc_context,
+strbuf_s *strbuf_new_custom(struct eembed_allocator *allocator,
 			    unsigned char *mem_buf, size_t buf_len,
 			    const char *str, size_t str_len);
 

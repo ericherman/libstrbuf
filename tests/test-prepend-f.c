@@ -2,29 +2,26 @@
 /* test-prepend-f.c */
 /* Copyright (C) 2020 Eric Herman <eric@freesa.org> */
 
-#include <strbuf.h>
-#include <echeck.h>
+#include "strbuf.h"
+#include "echeck.h"
 
-#include <assert.h>
-#include <string.h>
-
-int test_prepend_f(size_t max, const char *prepend, const char *in,
-		   const char *expected)
+unsigned test_prepend_f_inner(size_t max, const char *prepend, const char *in,
+			      const char *expected)
 {
-	size_t in_len = in ? strlen(in) : 0;
+	unsigned failures = 0;
+
+	size_t in_len = in ? eembed_strlen(in) : 0;
 
 	strbuf_s *sb = strbuf_new(in, in_len);
-
-	int failures = 0;
 
 	failures += check_size_t(strbuf_len(sb), in_len);
 
 	failures +=
 	    check_str(strbuf_prepend_f(sb, max, "%s", prepend), expected);
-	size_t pos = prepend ? strlen(prepend) : strlen("(null)");
+	size_t pos = prepend ? eembed_strlen(prepend) : eembed_strlen("(null)");
 	failures += check_char(strbuf_char(sb, pos), in ? *in : '\0');
 
-	failures += check_size_t(strbuf_len(sb), strlen(expected));
+	failures += check_size_t(strbuf_len(sb), eembed_strlen(expected));
 
 	failures += check_str(strbuf_str(sb), expected);
 
@@ -33,21 +30,21 @@ int test_prepend_f(size_t max, const char *prepend, const char *in,
 	return failures;
 }
 
-int main(int argc, char **argv)
+unsigned test_prepend_f(void)
 {
-	int failures = 0;
-	assert(argc);
-	assert(argv);
+	unsigned failures = 0;
 
-	failures += test_prepend_f(3, "foo", "foo", "foofoo");
-	failures += test_prepend_f(300, "foo", "foo", "foofoo");
-	failures += test_prepend_f(3, "bar", NULL, "bar");
-	failures += test_prepend_f(3, "", "baz", "baz");
-	failures += test_prepend_f(3, NULL, "wiz", "(null)wiz");
-
-	if (failures) {
-		fprintf(stderr, "%d failures in %s\n", failures, __FILE__);
+	if (!EEMBED_HOSTED) {
+		return 0;
 	}
 
-	return failures ? 1 : 0;
+	failures += test_prepend_f_inner(3, "foo", "foo", "foofoo");
+	failures += test_prepend_f_inner(300, "foo", "foo", "foofoo");
+	failures += test_prepend_f_inner(3, "bar", NULL, "bar");
+	failures += test_prepend_f_inner(3, "", "baz", "baz");
+	failures += test_prepend_f_inner(3, NULL, "wiz", "(null)wiz");
+
+	return failures;
 }
+
+ECHECK_TEST_MAIN(test_prepend_f)
