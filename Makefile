@@ -3,15 +3,16 @@ default: check
 SHELL=/bin/bash
 BROWSER=firefox
 DEBUG_RUN=valgrind -q
+#FAUX_FREESTANDING=-DFAUX_FREESTANDING=1 -DEEMBED_HOSTED=0
 
 # extracted from https://github.com/torvalds/linux/blob/master/scripts/Lindent
 LINDENT=indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs -cp1 -il0
 
 CFLAGS += -g -Wall -Wextra -pedantic -Werror -pipe
 
-BUILD_CFLAGS += -DNDEBUG -O2 -Wno-unused-parameter -Wno-unused-variable
+BUILD_CFLAGS += -DNDEBUG -O2 $(FAUX_FREESTANDING)
 
-DEBUG_CFLAGS += -DDEBUG -O0 \
+DEBUG_CFLAGS += -DDEBUG -O0 $(FAUX_FREESTANDING) \
 	-fno-inline-small-functions \
 	-fkeep-inline-functions \
 	-fkeep-static-functions \
@@ -344,4 +345,5 @@ tidy:
 		-T uint8_t -T uint16_t -T uint32_t -T uint64_t \
 		-T strbuf_s \
 		tests/*.c \
-		src/*.c src/*.h
+		src/*.c src/*.h \
+		strbuf_tests_arduino/strbuf_tests_arduino.ino

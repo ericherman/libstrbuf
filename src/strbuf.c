@@ -133,7 +133,7 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 		}
 	} else {
 		size_t size = sizeof(strbuf_s);
-		sb = ea->malloc(ea, size);
+		sb = (strbuf_s *)ea->malloc(ea, size);
 		if (!sb) {
 			return NULL;
 		}
@@ -152,7 +152,7 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 			buf_len = min_initial_size;
 		}
 
-		sb->buf = ea->malloc(ea, buf_len);
+		sb->buf = (char *)ea->malloc(ea, buf_len);
 		if (!sb->buf) {
 			if (strbuf_struct_needs_free(sb)) {
 				ea->free(ea, sb);
@@ -171,6 +171,8 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 	eembed_assert(str_len < sb->buf_len);
 	const char *result = strbuf_set(sb, str, str_len);
 	eembed_assert(result);
+	(void)result;
+
 	return sb;
 }
 
@@ -240,6 +242,7 @@ const char *strbuf_rehome(strbuf_s *sb)
 		const char *str = sb->buf + sb->start;
 		void *p = eembed_memmove(sb->buf, str, len);
 		eembed_assert(p);
+		(void)p;
 		sb->start = 0;
 		sb->end = len;
 		size_t remaining = sb->buf_len - sb->end;
@@ -259,7 +262,7 @@ const char *strbuf_grow(strbuf_s *sb, size_t new_buf_len)
 	new_buf_len = eembed_align(new_buf_len);
 
 	struct eembed_allocator *ea = sb->ea;
-	char *new_buf = ea->malloc(ea, new_buf_len);
+	char *new_buf = (char *)ea->malloc(ea, new_buf_len);
 	if (!new_buf) {
 		return NULL;
 	}
@@ -268,6 +271,7 @@ const char *strbuf_grow(strbuf_s *sb, size_t new_buf_len)
 	if (str_len) {
 		void *p = eembed_memcpy(new_buf, sb->buf + sb->start, str_len);
 		eembed_assert(p);
+		(void)p;
 	}
 	size_t remaining = new_buf_len - str_len;
 	eembed_memset(new_buf + str_len, 0x00, remaining);
@@ -388,7 +392,7 @@ const char *strbuf_append_f(strbuf_s *sb, size_t max, const char *format, ...)
 		tmp_buf = stack_buf;
 	} else {
 		struct eembed_allocator *ea = sb->ea;
-		tmp_buf = ea->malloc(ea, max);
+		tmp_buf = (char *)ea->malloc(ea, max);
 		if (!tmp_buf) {
 			return NULL;
 		}
@@ -479,7 +483,7 @@ const char *strbuf_prepend_f(strbuf_s *sb, size_t max, const char *format, ...)
 		tmp_buf = stack_buf;
 	} else {
 		struct eembed_allocator *ea = sb->ea;
-		tmp_buf = ea->malloc(ea, max);
+		tmp_buf = (char *)ea->malloc(ea, max);
 		if (!tmp_buf) {
 			return NULL;
 		}

@@ -9,6 +9,13 @@ unsigned test_append_inner(const char *in, const char *append,
 			   const char *expected)
 {
 	unsigned failures = 0;
+	struct eembed_allocator *orig = eembed_global_allocator;
+#if !EEMBED_HOSTED
+	const size_t bytes_len = 125 * sizeof(void *);
+	unsigned char bytes[125 * sizeof(void *)];
+	struct eembed_allocator *ea = eembed_bytes_allocator(bytes, bytes_len);
+	eembed_global_allocator = ea;
+#endif
 
 	size_t in_len = in ? eembed_strlen(in) : 0;
 
@@ -25,6 +32,7 @@ unsigned test_append_inner(const char *in, const char *append,
 
 	strbuf_destroy(sb);
 
+	eembed_global_allocator = orig;
 	return failures;
 }
 

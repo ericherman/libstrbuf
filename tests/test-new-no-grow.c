@@ -16,6 +16,13 @@ unsigned test_destroy_null(void)
 unsigned test_custom_small_buffer(void)
 {
 	unsigned failures = 0;
+	struct eembed_allocator *orig = eembed_global_allocator;
+#if !EEMBED_HOSTED
+	const size_t bytes_len = 125 * sizeof(void *);
+	unsigned char bytes[125 * sizeof(void *)];
+	struct eembed_allocator *ea = eembed_bytes_allocator(bytes, bytes_len);
+	eembed_global_allocator = ea;
+#endif
 
 	size_t buf_len = 65;
 	unsigned char mem_buf[buf_len];
@@ -24,6 +31,7 @@ unsigned test_custom_small_buffer(void)
 	strbuf_s *sb =
 	    strbuf_new_custom(NULL, mem_buf, buf_len, str, eembed_strlen(str));
 
+	failures += check_ptr_not_null(sb);
 	if (!sb) {
 		return 1;
 	}
@@ -37,6 +45,7 @@ unsigned test_custom_small_buffer(void)
 
 	strbuf_destroy(sb);
 
+	eembed_global_allocator = orig;
 	return failures;
 }
 
@@ -44,9 +53,13 @@ unsigned test_no_grow(void)
 {
 	unsigned failures = 0;
 
-	size_t buf_len = 255;
+	size_t buf_len = 125 * sizeof(void *);
 	unsigned char buf[buf_len];
 	strbuf_s *sb = strbuf_no_grow(buf, buf_len, NULL, 0);
+	failures += check_ptr_not_null(sb);
+	if (!sb) {
+		return failures;
+	}
 	/* sizeof(strbuf_s) is about 64 */
 	/* we expect only about 190 bytes left to make use of a string data */
 
@@ -77,15 +90,15 @@ unsigned test_no_grow(void)
 
 	strbuf_trim(sb);
 
-	const void *p = strbuf_prepend_f(sb, 3, "%s", "foo");
+	const void *p = strbuf_prepend(sb, "foo", 3);
 	failures += check_int(p ? 1 : 0, 1);
 
-	char *bigbuf = eembed_calloc(1, 1000);
-	eembed_assert(bigbuf);
-	eembed_memset(bigbuf, 'x', 999);
-	p = strbuf_set(sb, bigbuf, 1000);
+	const size_t bigbuf_len = (150 * sizeof(void *));
+	char bigbuf[bigbuf_len + 1];
+	bigbuf[bigbuf_len] = '\0';
+	eembed_memset(bigbuf, 'x', bigbuf_len);
+	p = strbuf_set(sb, bigbuf, bigbuf_len);
 	failures += check_int(p ? 1 : 0, 0);
-	eembed_free(bigbuf);
 
 	strbuf_set(sb, "", 0);
 	adds = 0;

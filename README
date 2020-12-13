@@ -24,17 +24,15 @@ A stack buffer constructor:
 
 A full custom constructor with memory allocator:
 
-	strbuf_malloc_func our_alloc;
-	strbuf_free_func our_free;
-	struct our_alloc_context;
-	void *alloc_context = &our_alloc_context;
-	unsigned char *initial_mem_buf = NULL;
+        const size_t bytes_len = 2048;
+        unsigned char bytes[bytes_len];
+        struct eembed_allocator *ea = eembed_bytes_allocator(bytes, bytes_len);
+
 	size_t initial_buf_len = 0;
 	const char *str = "foo";
 	size_t len = strlen(str);
 
-	strbuf_s *sb = strbuf_new_custom(our_alloc, our_free, alloc_context,
-					 initial_mem_buf, initial_buf_len,
+	strbuf_s *sb = strbuf_new_custom(ea, initial_mem_buf, initial_buf_len,
 					 str, len);
 
 The strbuf_s can be freed with:

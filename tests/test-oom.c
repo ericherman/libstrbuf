@@ -73,6 +73,11 @@ unsigned test_out_of_memory_construction_buf(const char *msg,
 unsigned test_oom(void)
 {
 	unsigned failures = 0;
+	if (!EEMBED_HOSTED) {
+		eembed_system_print(" (skipping test_oom)");
+		eembed_system_println();
+		return 0;
+	}
 
 	failures += test_out_of_memory_construction("a", 0);
 	failures += test_out_of_memory_construction("b", 1UL << 0);

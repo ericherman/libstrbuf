@@ -33,6 +33,8 @@ unsigned test_append_f(void)
 	unsigned failures = 0;
 
 	if (!EEMBED_HOSTED) {
+		eembed_system_print(" (skipping test_append_f)");
+		eembed_system_println();
 		return 0;
 	}
 
