@@ -15,12 +15,12 @@ typedef struct strbuf strbuf_s;
 struct eembed_allocator;	/* eembed.h */
 
 strbuf_s *strbuf_new_custom(struct eembed_allocator *allocator,
-			    unsigned char *mem_buf, size_t buf_len,
+			    unsigned char *mem_buf, size_t buf_size,
 			    const char *str, size_t str_len);
 
 strbuf_s *strbuf_new(const char *str, size_t strlen);
 
-strbuf_s *strbuf_no_grow(unsigned char *initial_buf, size_t initial_buf_len,
+strbuf_s *strbuf_no_grow(unsigned char *initial_buf, size_t initial_buf_size,
 			 const char *str, size_t str_len);
 
 void strbuf_destroy(strbuf_s *sb);

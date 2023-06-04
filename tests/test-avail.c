@@ -11,13 +11,13 @@ unsigned test_avail(void)
 
 	/* sizeof(strbuf_s) is about 64 */
 	/* we expect only about 16 bytes left to make use of a string data */
-	size_t buf_len = 80;
-	unsigned char buf[buf_len];
-	strbuf_s *sb = strbuf_no_grow(buf, buf_len, NULL, 0);
+	size_t buf_size = 80;
+	unsigned char buf[buf_size];
+	strbuf_s *sb = strbuf_no_grow(buf, buf_size, NULL, 0);
 
 	size_t usable = strbuf_avail(sb);
 	failures += check_int(usable > 0 ? 1 : 0, 1);
-	failures += check_int(usable < buf_len ? 1 : 0, 1);
+	failures += check_int(usable < buf_size ? 1 : 0, 1);
 
 	const char *abc_ws = "   abc   ";
 	const char *rv1 = strbuf_set(sb, abc_ws, eembed_strlen(abc_ws));

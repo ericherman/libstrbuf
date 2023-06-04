@@ -28,11 +28,11 @@ A full custom constructor with memory allocator:
         unsigned char bytes[bytes_len];
         struct eembed_allocator *ea = eembed_bytes_allocator(bytes, bytes_len);
 
-	size_t initial_buf_len = 0;
+	size_t initial_buf_size = 0;
 	const char *str = "foo";
 	size_t len = strlen(str);
 
-	strbuf_s *sb = strbuf_new_custom(ea, initial_mem_buf, initial_buf_len,
+	strbuf_s *sb = strbuf_new_custom(ea, initial_mem_buf, initial_buf_size,
 					 str, len);
 
 The strbuf_s can be freed with:

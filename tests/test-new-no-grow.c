@@ -24,12 +24,12 @@ unsigned test_custom_small_buffer(void)
 	eembed_global_allocator = ea;
 #endif
 
-	size_t buf_len = 65;
-	unsigned char mem_buf[buf_len];
+	size_t buf_size = 65;
+	unsigned char mem_buf[buf_size];
 	const char *str = "123456789 1234567890";
 
 	strbuf_s *sb =
-	    strbuf_new_custom(NULL, mem_buf, buf_len, str, eembed_strlen(str));
+	    strbuf_new_custom(NULL, mem_buf, buf_size, str, eembed_strlen(str));
 
 	failures += check_ptr_not_null(sb);
 	if (!sb) {
@@ -53,9 +53,9 @@ unsigned test_no_grow(void)
 {
 	unsigned failures = 0;
 
-	size_t buf_len = 125 * sizeof(void *);
-	unsigned char buf[buf_len];
-	strbuf_s *sb = strbuf_no_grow(buf, buf_len, NULL, 0);
+	size_t buf_size = 125 * sizeof(void *);
+	unsigned char buf[buf_size];
+	strbuf_s *sb = strbuf_no_grow(buf, buf_size, NULL, 0);
 	failures += check_ptr_not_null(sb);
 	if (!sb) {
 		return failures;
@@ -66,18 +66,18 @@ unsigned test_no_grow(void)
 	strbuf_set(sb, "", 0);
 	size_t adds = 0;
 	size_t ooms = 0;
-	for (size_t i = 0; i < (2 * buf_len); ++i) {
+	for (size_t i = 0; i < (2 * buf_size); ++i) {
 		char c = (i < 10) ? ('a' + i) : ' ';
-		size_t buf_len = i + 1;
-		char buf[buf_len];
+		size_t buf_size = i + 1;
+		char buf[buf_size];
 		eembed_memset(buf, c, i);
-		buf[buf_len - 1] = '\0';
+		buf[buf_size - 1] = '\0';
 
 		const void *p;
 		if (i % 2) {
-			p = strbuf_prepend(sb, buf, buf_len);
+			p = strbuf_prepend(sb, buf, buf_size);
 		} else {
-			p = strbuf_prepend_f(sb, buf_len, "%s", buf);
+			p = strbuf_prepend_f(sb, buf_size, "%s", buf);
 		}
 		if (!p) {
 			++ooms;
@@ -103,18 +103,18 @@ unsigned test_no_grow(void)
 	strbuf_set(sb, "", 0);
 	adds = 0;
 	ooms = 0;
-	for (size_t i = 0; i < (2 * buf_len); ++i) {
+	for (size_t i = 0; i < (2 * buf_size); ++i) {
 		char c = (i < 10) ? ('a' + i) : ' ';
-		size_t buf_len = i + 1;
-		char buf[buf_len];
+		size_t buf_size = i + 1;
+		char buf[buf_size];
 		eembed_memset(buf, c, i);
-		buf[buf_len - 1] = '\0';
+		buf[buf_size - 1] = '\0';
 
 		const void *p;
 		if (i % 2) {
-			p = strbuf_append(sb, buf, buf_len);
+			p = strbuf_append(sb, buf, buf_size);
 		} else {
-			p = strbuf_append_f(sb, buf_len, "%s", buf);
+			p = strbuf_append_f(sb, buf_size, "%s", buf);
 		}
 		if (!p) {
 			++ooms;
@@ -128,7 +128,7 @@ unsigned test_no_grow(void)
 	strbuf_set(sb, "", 0);
 	adds = 0;
 	ooms = 0;
-	for (size_t i = 0; i < (2 * buf_len); ++i) {
+	for (size_t i = 0; i < (2 * buf_size); ++i) {
 		const char *str = (i < 10) ? "x" : " ";
 		if (i % 2) {
 			p = strbuf_prepend(sb, str, 1);
