@@ -111,8 +111,6 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 			    unsigned char *mem_buf, size_t buf_len,
 			    const char *str, size_t str_len)
 {
-	size_t min_initial_size = eembed_align(EEMBED_WORD_LEN > 4 ? 24 : 12);
-
 	if (ea == NULL) {
 		ea = eembed_global_allocator;
 	}
@@ -124,11 +122,7 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 		sb = (strbuf_s *)(mem_buf + buf_len - strbuf_size);
 		strbuf_set_struct_needs_free(sb, false);
 
-		size_t min_len = str_len + 1;
-		if (min_len < min_initial_size) {
-			min_len = min_initial_size;
-		}
-		size_t needed = (strbuf_size + min_len);
+		size_t needed = (strbuf_size + str_len + 1);
 		if (buf_len > needed) {
 			sb->buf = (char *)mem_buf;
 			sb->buf_len = buf_len - strbuf_size;
@@ -154,6 +148,8 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 			buf_len = eembed_strnlen(str, str_len);
 		}
 		buf_len += 1;
+
+		size_t min_initial_size = EEMBED_WORD_LEN * 4;
 		if (buf_len < min_initial_size) {
 			buf_len = min_initial_size;
 		}
