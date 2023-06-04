@@ -564,3 +564,22 @@ const char *strbuf_trim(strbuf_s *sb)
 	strbuf_trim_r(sb);
 	return strbuf_str(sb);
 }
+
+char *strbuf_expose(strbuf_s *sb, size_t *size)
+{
+	eembed_assert(sb);
+	eembed_assert(size);
+
+	strbuf_rehome(sb);
+
+	*size = sb->buf_len;
+	return sb->buf;
+}
+
+const char *strbuf_return(strbuf_s *sb)
+{
+	eembed_assert(sb);
+	eembed_assert(sb->start == 0);
+	sb->end = eembed_strnlen(sb->buf, sb->buf_len);
+	return strbuf_str(sb);
+}

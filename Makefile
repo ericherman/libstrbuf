@@ -230,6 +230,19 @@ check-trim: build/test-trim
 check-trim-debug: debug/test-trim
 	$(DEBUG_RUN) ./$<
 
+# expose-return
+build/test-expose-return: tests/test-expose-return.c $(TEST_BUILD_OBJS) build
+	$(CC) $(TEST_BUILD_CFLAGS) $< -o $@
+
+debug/test-expose-return: tests/test-expose-return.c $(TEST_DEBUG_OBJS) debug
+	$(CC) $(TEST_DEBUG_CFLAGS) $< -o $@ $(DEBUG_LDFLAGS)
+
+check-expose-return: build/test-expose-return
+	./$<
+
+check-expose-return-debug: debug/test-expose-return
+	$(DEBUG_RUN) ./$<
+
 
 # oom
 build/test-oom: tests/test-oom.c $(TEST_BUILD_OBJS)
@@ -274,6 +287,7 @@ check-build: \
 	check-new-no-grow \
 	check-trim \
 	check-avail \
+	check-expose-return \
 	check-oom
 
 check-debug: \
@@ -290,6 +304,7 @@ check-debug: \
 	check-new-no-grow-debug \
 	check-trim-debug \
 	check-avail-debug \
+	check-expose-return-debug \
 	check-oom-debug
 
 check-all: check-build check-debug

@@ -50,4 +50,7 @@ const char *strbuf_trim(strbuf_s *sb);
 const char *strbuf_trim_l(strbuf_s *sb);
 const char *strbuf_trim_r(strbuf_s *sb);
 
+char *strbuf_expose(strbuf_s *sb, size_t *size);
+const char *strbuf_return(strbuf_s *sb);
+
 #endif /* #ifndef STRBUF_H */

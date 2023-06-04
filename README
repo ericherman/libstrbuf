@@ -80,6 +80,16 @@ A variety of append and prepend functions:
 	s = strbuf_append_uint(sb, u);
 	s = strbuf_prepend_uint(sb, u);
 
+The raw buffer can be retrieved from the strbuf:
+
+	size_t buf_size = 0;
+	char *buf = strbuf_expose(sb, &buf_size);
+
+Once done with the raw buffer, it should be returned to the control of
+the library, so the struct's end-pointer can be adusted:
+
+	strbuf_return(sb);
+
 
 Cloning
 -------

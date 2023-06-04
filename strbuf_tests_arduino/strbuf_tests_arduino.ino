@@ -18,6 +18,7 @@ unsigned test_prepend_int(void);
 unsigned test_prepend_uint(void);
 unsigned test_prepend(void);
 unsigned test_trim(void);
+unsigned test_expose_return(void);
 
 void setup(void)
 {
@@ -66,6 +67,7 @@ void loop(void)
 	failures += Test_func(test_append_uint);
 	failures += Test_func(test_append);
 	failures += Test_func(test_avail);
+	failures += Test_func(test_expose_return);
 	failures += Test_func(test_new_no_grow);
 	failures += Test_func(test_prepend_float);
 	failures += Test_func(test_prepend_int);
