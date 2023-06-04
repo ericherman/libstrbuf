@@ -74,8 +74,9 @@ unsigned test_oom(void)
 {
 	unsigned failures = 0;
 	if (!EEMBED_HOSTED) {
-		eembed_system_print(" (skipping test_oom)");
-		eembed_system_println();
+		struct eembed_log *log = eembed_out_log;
+		log->append_s(log, " (skipping test_oom)");
+		log->append_eol(log);
 		return 0;
 	}
 

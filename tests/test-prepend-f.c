@@ -43,8 +43,9 @@ unsigned test_prepend_f(void)
 	unsigned failures = 0;
 
 	if (!EEMBED_HOSTED) {
-		eembed_system_print(" (skipping test_prepend_f)");
-		eembed_system_println();
+		struct eembed_log *log = eembed_out_log;
+		log->append_s(log, " (skipping test_prepend_f)");
+		log->append_eol(log);
 		return 0;
 	}
 
