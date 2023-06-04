@@ -102,6 +102,11 @@ void strbuf_destroy(strbuf_s *sb)
 	}
 }
 
+size_t strbuf_struct_size(void)
+{
+	return eembed_align(sizeof(strbuf_s));
+}
+
 strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 			    unsigned char *mem_buf, size_t buf_len,
 			    const char *str, size_t str_len)
@@ -113,18 +118,19 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 	}
 
 	strbuf_s *sb = NULL;
-	if (mem_buf && (buf_len > (sizeof(strbuf_s)))) {
+	size_t strbuf_size = strbuf_struct_size();
+	if (mem_buf && (buf_len > strbuf_size)) {
 		eembed_memset(mem_buf, 0x00, buf_len);
-		sb = (strbuf_s *)mem_buf;
+		sb = (strbuf_s *)(mem_buf + buf_len - strbuf_size);
 		strbuf_set_struct_needs_free(sb, false);
-		size_t strbuf_size = eembed_align(sizeof(strbuf_s));
+
 		size_t min_len = str_len + 1;
 		if (min_len < min_initial_size) {
 			min_len = min_initial_size;
 		}
 		size_t needed = (strbuf_size + min_len);
 		if (buf_len > needed) {
-			sb->buf = (char *)(mem_buf + strbuf_size);
+			sb->buf = (char *)mem_buf;
 			sb->buf_len = buf_len - strbuf_size;
 			strbuf_set_buf_needs_free(sb, false);
 		} else {
