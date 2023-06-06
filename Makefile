@@ -37,6 +37,12 @@ TEST_DEBUG_CFLAGS=$(CFLAGS) $(DEBUG_CFLAGS) $(TEST_INCS) $(TEST_DEBUG_OBJS)
 # $^ : all of the prerequisite files
 # $* : wildcard matched part
 
+submodules/libecheck/src/echeck.c \
+submodules/libecheck/src/echeck.h \
+submodules/libecheck/src/eembed.h \
+submodules/libecheck/src/eembed.c &:
+	git submodule update --init --recursive
+
 build/strbuf.o: src/strbuf.c src/strbuf.h
 	$(CC) -c $(CFLAGS) $(BUILD_CFLAGS) \
 		-I./submodules/libecheck/src \
