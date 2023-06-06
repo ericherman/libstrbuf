@@ -27,9 +27,8 @@ unsigned test_custom_small_buffer(void)
 	size_t buf_size = 65;
 	unsigned char mem_buf[buf_size];
 	const char *str = "123456789 1234567890";
-
-	strbuf_s *sb =
-	    strbuf_new_custom(NULL, mem_buf, buf_size, str, eembed_strlen(str));
+	size_t len = eembed_strlen(str);
+	strbuf_s *sb = strbuf_new_custom(NULL, mem_buf, buf_size, str, len);
 
 	failures += check_ptr_not_null(sb);
 	if (!sb) {
@@ -39,7 +38,8 @@ unsigned test_custom_small_buffer(void)
 	failures += check_str(strbuf_str(sb), str);
 
 	str = "123456789 123456789 123456789 123456789 1234567890";
-	const char *s = strbuf_set(sb, str, eembed_strlen(str));
+	len = eembed_strlen(str);
+	const char *s = strbuf_set(sb, str, len);
 
 	failures += check_str(s, str);
 
@@ -149,7 +149,40 @@ unsigned test_no_grow(void)
 	return failures;
 }
 
-/* TODO: split into 3 tests? */
+unsigned test_from_char_buf(void)
+{
+	unsigned failures = 0;
+
+	size_t buf_size = 125 * sizeof(void *);
+	char buf[buf_size];
+	eembed_strcpy(buf, "foo");
+	size_t len = eembed_strlen(buf);
+	size_t avail = buf_size - len;
+	if (avail < strbuf_struct_size()) {
+		++failures;
+		return failures;
+	}
+
+	/* sizeof(strbuf_s) is about 64 */
+	/* we expect (buf_size - 64) bytes left to make use of a string data */
+	strbuf_s *sb = strbuf_no_grow((unsigned char *)buf, buf_size, buf, len);
+	failures += check_ptr_not_null(sb);
+	if (!sb) {
+		return failures;
+	}
+	failures += check_str(strbuf_str(sb), "foo");
+
+	strbuf_prepend(sb, " my ", 4);
+	strbuf_append(sb, " stuff ", 7);
+	strbuf_trim(sb);
+	failures += check_ptr(strbuf_expose(sb, NULL), buf);
+	strbuf_destroy(sb);
+	failures += check_str(buf, "my " "foo" " stuff");
+
+	return failures;
+}
+
+/* TODO: split into 4 tests? */
 unsigned test_new_no_grow(void)
 {
 	unsigned failures = 0;
@@ -157,6 +190,7 @@ unsigned test_new_no_grow(void)
 	failures += test_destroy_null();
 	failures += test_custom_small_buffer();
 	failures += test_no_grow();
+	failures += test_from_char_buf();
 
 	return failures;
 }

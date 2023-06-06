@@ -116,16 +116,16 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 	}
 
 	strbuf_s *sb = NULL;
-	size_t strbuf_len = strbuf_struct_size();
-	if (mem_buf && (buf_size > strbuf_len)) {
-		eembed_memset(mem_buf, 0x00, buf_size);
-		sb = (strbuf_s *)(mem_buf + buf_size - strbuf_len);
+	size_t strbuf_size = strbuf_struct_size();
+	if (mem_buf && (buf_size > strbuf_size)) {
+		sb = (strbuf_s *)(mem_buf + buf_size - strbuf_size);
+		eembed_memset(sb, 0x00, strbuf_size);
 		strbuf_set_struct_needs_free(sb, false);
 
-		size_t needed = (strbuf_len + str_len + 1);
+		size_t needed = (strbuf_size + str_len + 1);
 		if (buf_size > needed) {
 			sb->buf = (char *)mem_buf;
-			sb->buf_size = buf_size - strbuf_len;
+			sb->buf_size = buf_size - strbuf_size;
 			strbuf_set_buf_needs_free(sb, false);
 		} else {
 			sb->buf = NULL;
@@ -164,8 +164,6 @@ strbuf_s *strbuf_new_custom(struct eembed_allocator *ea,
 		sb->buf_size = buf_size;
 	}
 	sb->ea = ea;
-
-	eembed_memset(sb->buf, 0x00, sb->buf_size);
 	sb->start = 0;
 	sb->end = 0;
 
@@ -307,7 +305,7 @@ const char *strbuf_set(strbuf_s *sb, const char *str, size_t str_len)
 		}
 	}
 	sb->start = 0;
-	eembed_strncpy(sb->buf, str, str_len);
+	eembed_memmove(sb->buf, str, str_len);
 	sb->buf[str_len] = '\0';
 	sb->end = eembed_strnlen(sb->buf, sb->buf_size);
 	size_t remaining = sb->buf_size - sb->end;
@@ -569,11 +567,13 @@ const char *strbuf_trim(strbuf_s *sb)
 char *strbuf_expose(strbuf_s *sb, size_t *size)
 {
 	eembed_assert(sb);
-	eembed_assert(size);
 
 	strbuf_rehome(sb);
 
-	*size = sb->buf_size;
+	if (size) {
+		*size = sb->buf_size;
+	}
+
 	return sb->buf;
 }
 

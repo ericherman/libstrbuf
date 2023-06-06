@@ -1,5 +1,12 @@
-`libstrbuf` is a mutable string library for C,
-usable in embedded firmwares
+`libstrbuf` is a mutable string library for C.
+By design, it is usable in embedded firmwares as well as regular C programs.
+
+Dependencies
+------------
+Sources for dependencies are included via git's submodule facility.
+`libstrbuf` depends upon E(asy)Embed which is part of `libecheck`.
+The tests depend upon E(asy)Check which is also a part of `libecheck`.
+See: [`libecheck`](https://github.com/ericherman/libecheck).
 
 Usage
 -----
@@ -98,18 +105,69 @@ A variety of `append` and `prepend` functions:
 	s = strbuf_prepend_uint(sb, u);
 ```
 
-The raw buffer can be retrieved from the `strbuf`:
+To interoperate with code that expects a NULL-terminated char buffer,
+the underlying raw buffer can be retrieved from the `strbuf_s`.
+The `strbuf_expose` function ensures that the string contents start at `buf[0]`,
+even if the internal start pointer had moved previously.
 
 ```c
 	size_t buf_size = 0;
 	char *buf = strbuf_expose(sb, &buf_size);
 ```
 
-Once done with the raw buffer, it should be returned to the control of
-the library, so the struct's end-pointer can be adjusted:
+Once done with the underlying raw buffer, it should be returned to the control
+of the library, so the struct's end-pointer can be adjusted to match the new
+location of the first NULL byte:
 
 ```c
 	strbuf_return(sb);
+```
+
+If confident that an existing buffer is at least `strbuf_struct_size()` larger
+than the current contents, a `strbuf_s` can be constructed without allocation:
+
+```c
+/* demo-no-allocation-strbuf.c */
+/* gcc -I src \
+	src/strbuf.c \
+	-I submodules/libecheck/src \
+	submodules/libecheck/src/eembed.c \
+	demo-no-allocation-strbuf.c \
+	-o demo-no-allocation-strbuf &&
+   ./demo-no-allocation-strbuf
+*/
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <strbuf.h>
+
+int main(void)
+{
+	char buf[4000];
+	size_t buf_size = sizeof(buf);
+	strcpy(buf, "foo");
+
+	size_t len = strlen(buf);
+	size_t avail = buf_size - len;
+	size_t avail_needed = strbuf_struct_size();
+	assert(avail_needed <= 64);
+	assert(avail_needed <= avail);
+
+	strbuf_s *sb = strbuf_no_grow((unsigned char *)buf, buf_size, buf, len);
+	assert(sb);
+
+	strbuf_prepend(sb, " my ", 4);
+	strbuf_append(sb, " stuff ", 7);
+	strbuf_trim(sb);
+
+	strbuf_expose(sb, NULL);
+
+	assert(strcmp(buf, "my foo stuff") == 0);
+	printf("%s\n", buf);
+
+	return 0;
+}
 ```
 
 Cloning

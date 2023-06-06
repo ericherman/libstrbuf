@@ -1,0 +1,13 @@
+
+* Make inter-op easier when starting with a NULL-terminated char buf
+  * add a constructor that takes the existing char_buf, char_buf_size?
+    * is it handy to have it realloc if runs out of space?
+* Consider converting the struct from an opaque pointer in strbuf.c to a
+  user-visible structure in strbuf.h
+* Consider re-structure for easier use
+  * it's irritating to have to add to a Makefile commands like:
+      CFLAGS += -I libstrbuf/src \
+		-I libstrbuf/submodules/libecheck/src
+      CFILES += libstrbuf/src/strbuf.c \
+		libstbuf/submodules/libecheck/src/eembed.c
+  * linking the source of the submodules in to src/ maybe?
